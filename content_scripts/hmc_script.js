@@ -1,6 +1,6 @@
-let fechaOrigIni;
-let fechaOrigFin;
-let cvsData = '"Fecha","Tipo","Punto de Venta","Número Desde","Número Hasta","Cód. Autorización","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominación Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"'
+var fechaOrigIni;
+var fechaOrigFin;
+var cvsData = '"Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Cod. Autorizacion","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominacion Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"'
 /**
  * Listen for messages from the background script.
  * Call "buscar".
@@ -32,28 +32,23 @@ function buscar(fechaIni, fechaFin) {
     fechaOrigFin = fechaFinDate;
 
     var repetir = Math.round((fechaFinDate - fechaIniDate) / (1000 * 3600 * 24) / 30);
-    var msjAlert = 'Se generaron las siguientes consultas en el historial:';
-
+    
     for (i = 0; i < repetir; i++) {
         fechaFinDate = new Date(fechaIniDate);
         fechaFinDate = new Date(fechaFinDate.getFullYear(), fechaFinDate.getMonth() + 1, 0);
-        if (fechaFinDate > fechaOrigFin) { fechaFinDate = fechaOrigFin };
+
+        if (fechaFinDate >= fechaOrigFin) { fechaFinDate = fechaOrigFin };
 
         var fechaIniForm = fechaIniDate.getDate().toString().padStart(2, 0) + '/' + (fechaIniDate.getMonth() + 1).toString().padStart(2, 0) + '/' + fechaIniDate.getFullYear();
-        console.log(`fechaIniForm ${i}: ${fechaIniForm}`);
         var fechaFinForm = (fechaFinDate.getDate()).toString().padStart(2, 0) + '/' + (fechaFinDate.getMonth() + 1).toString().padStart(2, 0) + '/' + fechaFinDate.getFullYear();
-        console.log(`fechaFinForm ${i}: ${fechaFinForm}`);
 
-        // document.getElementById("fechaEmision").value = fechaIniForm + " - " + fechaFinForm;
+        document.getElementById("fechaEmision").value = fechaIniForm + " - " + fechaFinForm;
 
-        // document.getElementById('buscarComprobantes').click();
+        document.getElementById('buscarComprobantes').click();
 
-        //msjAlert = msjAlert + '\n' + (fechaIniForm + " - " + fechaFinForm);
-        //msjAlert += `\n${fechaIniForm} - ${fechaFinForm}`;
         fechaIniDate = new Date(fechaFinDate.setDate(fechaFinDate.getDate() + 1));
     };
 
-    //alert(msjAlert);
     document.getElementById('linkTabHistorial').click();
 }
 
@@ -62,7 +57,6 @@ function getData() {
     dataConsulta.forEach(consulta => {
         var idConsulta = consulta.getAttribute("data-id-consulta")
         var url = `https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaResultados&id=${idConsulta}`;
-        console.log(`ejecutando ${idConsulta}`);
         fetch(url)
             .then(response => response.json())
             .then(json => {
@@ -75,13 +69,19 @@ function getData() {
 }
 
 function saveFile() {
-    console.log("save file!");
-    console.log(cvsData);
-    var hiddenElement = document.createElement('a');
-    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(cvsData);
-    hiddenElement.target = '_blank';
+    cvsData = 'data:text/csv;charset=utf-8,\n' + cvsData;
+    alert("Creando archivo CSV!");
+    var encodedUri = encodeURI(cvsData);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
 
-    //provide the name for the CSV file to be downloaded  
-    hiddenElement.download = `CUIT 2030073912 | ${fechaIniForm} - ${fechaFinForm}`;
-    hiddenElement.click();
+    var fechaIniForm = fechaOrigIni.getDate().toString().padStart(2, 0) + '-' + (fechaOrigIni.getMonth() + 1).toString().padStart(2, 0) + '-' + fechaOrigIni.getFullYear();
+    var fechaFinForm = (fechaOrigFin.getDate()).toString().padStart(2, 0) + '-' + (fechaOrigFin.getMonth() + 1).toString().padStart(2, 0) + '-' + fechaOrigFin.getFullYear();
+
+    var nombre = document.querySelector("#usernav .text-primary").textContent;
+    link.setAttribute("download", `${nombre} | ${fechaIniForm} - ${fechaFinForm}`);
+    document.body.appendChild(link); // Required for FF
+
+    link.click(); // This will download the data file named "my_data.csv".
+
 }

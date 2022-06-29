@@ -3,7 +3,8 @@
  * the content script in the page.
  */
 function listenForClicks() {
-    document.addEventListener("click", (e) => {
+    var button = document.getElementById("hmc-fechas-btn");
+    button.addEventListener("click", (e) => {
         /**
          * Insert the page-hiding CSS into the active tab,
          * then get the beast URL and
@@ -11,19 +12,19 @@ function listenForClicks() {
          */
         function hackMisComprobantes(tabs) {
             browser.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-                var fecha_ini = "2021-01-01";
-                var fecha_fin = "2021-02-28";
+                var fecha_ini = document.getElementById('hmc-fecha-ini').value;
+                var fecha_fin = document.getElementById('hmc-fecha-fin').value;
                 browser.tabs.sendMessage(tab.id, {
                     command: "buscar",
                     fechaIni: fecha_ini,
                     fechaFin: fecha_fin
                 }).then(
                     browser.tabs.sendMessage(tab.id, {
-                        command:"getData"
+                        command: "getData"
                     })
                 ).then(
                     browser.tabs.sendMessage(tab.id, {
-                        command:"saveFile"
+                        command: "saveFile"
                     })
                 );
             });
