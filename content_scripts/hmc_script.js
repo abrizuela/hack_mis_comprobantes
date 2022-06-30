@@ -1,5 +1,7 @@
 var fechaOrigIni;
 var fechaOrigFin;
+var mesesConsulta;
+var idsConsulta;
 var cvsData = '"Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Cod. Autorizacion","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominacion Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"'
 /**
  * Listen for messages from the background script.
@@ -16,6 +18,9 @@ browser.runtime.onMessage.addListener(message => {
         case "saveFile":
             saveFile();
             break;
+        case "getIdsConsulta":
+            getIdsConsulta();
+            break;
     };
 });
 
@@ -31,9 +36,9 @@ function buscar(fechaIni, fechaFin) {
     fechaOrigIni = fechaIniDate;
     fechaOrigFin = fechaFinDate;
 
-    var repetir = Math.round((fechaFinDate - fechaIniDate) / (1000 * 3600 * 24) / 30);
-    
-    for (i = 0; i < repetir; i++) {
+    mesesConsulta = Math.round((fechaFinDate - fechaIniDate) / (1000 * 3600 * 24) / 30);
+
+    for (i = 0; i < mesesConsulta; i++) {
         fechaFinDate = new Date(fechaIniDate);
         fechaFinDate = new Date(fechaFinDate.getFullYear(), fechaFinDate.getMonth() + 1, 0);
 
@@ -52,11 +57,22 @@ function buscar(fechaIni, fechaFin) {
     document.getElementById('linkTabHistorial').click();
 }
 
+function getIdsConsulta() {
+    const urlConsulta = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaConsultas&t=R";
+    idsConsulta = [];
+    fetch(urlConsulta)
+        .then(response => response.json())
+        .then(json => {
+            var datos = json.datos;
+            for (let i = 0; i < datos.length; i++) {
+                idsConsulta.push(datos[i].codigo);
+            };
+        });
+}
+
 function getData() {
-    var dataConsulta = document.querySelectorAll("[data-id-consulta]");
-    dataConsulta.forEach(consulta => {
-        var idConsulta = consulta.getAttribute("data-id-consulta")
-        var url = `https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaResultados&id=${idConsulta}`;
+    for (let i = 0; i < mesesConsulta; index++) {
+        var url = `https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaResultados&id=${idsConsulta[i]}`;
         fetch(url)
             .then(response => response.json())
             .then(json => {
@@ -65,12 +81,12 @@ function getData() {
                     cvsData += `\n"${element[0]}","${element[1]}","${element[3]}","${element[4]}","${element[5]}","${element[8]}","${element[10]}","${element[11]}","${element[12]}","${element[13]}","${element[14]}","${element[15]}","${element[17]}","${element[19]}","${element[21]}","${element[23]}"`;
                 });
             });
-    });
+    };
 }
 
 function saveFile() {
     cvsData = 'data:text/csv;charset=utf-8,\n' + cvsData;
-    alert("Creando archivo CSV!");
+    //alert("Creando archivo CSV!");
     var encodedUri = encodeURI(cvsData);
     var link = document.createElement("a");
     link.setAttribute("href", encodedUri);
