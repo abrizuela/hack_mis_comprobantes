@@ -12,14 +12,8 @@ browser.runtime.onMessage.addListener(message => {
         case "buscar":
             buscar(message.fechaIni, message.fechaFin);
             break;
-        case "getData":
-            getData();
-            break;
-        case "saveFile":
-            saveFile();
-            break;
-        case "getIdsConsulta":
-            getIdsConsulta();
+        case "downloadFile":
+            downloadFile();
             break;
     };
 });
@@ -57,36 +51,33 @@ function buscar(fechaIni, fechaFin) {
     document.getElementById('linkTabHistorial').click();
 }
 
-function getIdsConsulta() {
+/**
+ * Here is where the magic happens
+ */
+async function downloadFile() {
     const urlConsulta = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaConsultas&t=R";
+    let responseListaConsulta = await fetch(urlConsulta);
+    let json = await responseListaConsulta.json();
+    let datos = json.datos;
     idsConsulta = [];
-    fetch(urlConsulta)
-        .then(response => response.json())
-        .then(json => {
-            var datos = json.datos;
-            for (let i = 0; i < datos.length; i++) {
-                idsConsulta.push(datos[i].codigo);
-            };
-        });
-}
-
-function getData() {
-    for (let i = 0; i < mesesConsulta; index++) {
-        var url = `https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaResultados&id=${idsConsulta[i]}`;
-        fetch(url)
-            .then(response => response.json())
-            .then(json => {
-                var data = json.datos.data;
-                data.forEach(element => {
-                    cvsData += `\n"${element[0]}","${element[1]}","${element[3]}","${element[4]}","${element[5]}","${element[8]}","${element[10]}","${element[11]}","${element[12]}","${element[13]}","${element[14]}","${element[15]}","${element[17]}","${element[19]}","${element[21]}","${element[23]}"`;
-                });
-            });
+    for (let i = 0; i < datos.length; i++) {
+        idsConsulta.push(datos[i].codigo);
     };
+
+    for (let i = 0; i < mesesConsulta; i++) {
+        var url = `https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaResultados&id=${idsConsulta[i]}`;
+        var responseListaResultados = await fetch(url);
+        var json2 = await responseListaResultados.json();
+        var data = await json2.datos.data;
+        data.forEach(element => {
+            cvsData += `\n"${element[0]}","${element[1]}","${element[3]}","${element[4]}","${element[5]}","${element[8]}","${element[10]}","${element[11]}","${element[12]}","${element[13]}","${element[14]}","${element[15]}","${element[17]}","${element[19]}","${element[21]}","${element[23]}"`;
+        });
+    };
+    saveFile()
 }
 
 function saveFile() {
     cvsData = 'data:text/csv;charset=utf-8,\n' + cvsData;
-    //alert("Creando archivo CSV!");
     var encodedUri = encodeURI(cvsData);
     var link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -99,5 +90,4 @@ function saveFile() {
     document.body.appendChild(link); // Required for FF
 
     link.click(); // This will download the data file named "my_data.csv".
-
 }

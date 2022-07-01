@@ -20,15 +20,7 @@ function listenForClicks() {
                     fechaFin: fecha_fin
                 }).then(
                     browser.tabs.sendMessage(tab.id, {
-                        command: "getIdsConsulta"
-                    })
-                ).then(
-                    browser.tabs.sendMessage(tab.id, {
-                        command: "getData"
-                    })
-                ).then(
-                    browser.tabs.sendMessage(tab.id, {
-                        command: "saveFile"
+                        command: "downloadFile"
                     })
                 );
             });
