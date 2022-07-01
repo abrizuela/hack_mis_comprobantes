@@ -3,26 +3,19 @@
  * the content script in the page.
  */
 function listenForClicks() {
-    var button = document.getElementById("hmc-fechas-btn");
+    var button = document.getElementById("hmc-hack-btn");
     button.addEventListener("click", (e) => {
-        /**
-         * Insert the page-hiding CSS into the active tab,
-         * then get the beast URL and
-         * send a "beastify" message to the content script in the active tab.
-         */
         function hackMisComprobantes(tabs) {
             browser.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-                var fecha_ini = document.getElementById('hmc-fecha-ini').value;
-                var fecha_fin = document.getElementById('hmc-fecha-fin').value;
+                var fechaIni = document.getElementById('hmc-fecha-ini').value;
+                var fechaFin = document.getElementById('hmc-fecha-fin').value;
+                var tipoConsulta = document.querySelector('input[name="hmc-tipo-consulta"]:checked').value;
                 browser.tabs.sendMessage(tab.id, {
-                    command: "buscar",
-                    fechaIni: fecha_ini,
-                    fechaFin: fecha_fin
-                }).then(
-                    browser.tabs.sendMessage(tab.id, {
-                        command: "downloadFile"
-                    })
-                );
+                    command: "doTheMagic",
+                    fechaIni: fechaIni,
+                    fechaFin: fechaFin,
+                    tipoConsulta: tipoConsulta
+                });
             });
         }
 

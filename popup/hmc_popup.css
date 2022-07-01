@@ -1,6 +1,6 @@
 #hmc-popup {
     display: grid;
-    place-items: center;
+
     width: 250px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
@@ -8,9 +8,16 @@
 #hmc-fechas {
     display: grid;
     grid-template-columns: minmax(100px, 25%) 1fr;
+    place-items: center;
 }
 
-#hmc-fechas-btn {
+#hmc-tipo-comprobantes{
+    display: grid;
+    grid-template-columns: minmax(100px, 50%) 1fr;
+    place-items: center;
+}
+
+#hmc-hack-btn {
     border-radius: 40px;
     background-color: #0075a8;
     padding: 10px 20px;
@@ -26,7 +33,7 @@
 }
 
 #hmc-fechas-btn:hover {
-    background-color: #14142b;   
+    background-color: #14142b;
 }
 
 #hmc-message {
@@ -36,4 +43,9 @@
 
 .message-error {
     color: #ff0000;
+}
+
+.hmc-title {
+    place-items: left !important;
+    font-weight: bold;
 }

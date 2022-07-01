@@ -1,3 +1,5 @@
+const urlApiAfipBase = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=";
+
 var fechaOrigIni;
 var fechaOrigFin;
 var mesesConsulta;
@@ -5,15 +7,12 @@ var idsConsulta;
 var cvsData = '"Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Cod. Autorizacion","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominacion Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"'
 /**
  * Listen for messages from the background script.
- * Call "buscar".
+ * Call "doTheMagic".
  */
 browser.runtime.onMessage.addListener(message => {
     switch (message.command) {
-        case "buscar":
-            buscar(message.fechaIni, message.fechaFin);
-            break;
-        case "downloadFile":
-            downloadFile();
+        case "doTheMagic":
+            doTheMagic(message.fechaIni, message.fechaFin, message.tipoConsulta);
             break;
     };
 });
@@ -22,7 +21,7 @@ browser.runtime.onMessage.addListener(message => {
  * Busca para todos los períodos 
  * comprendidos entre las fechas ingresadas
  */
-function buscar(fechaIni, fechaFin) {
+async function doTheMagic(fechaIni, fechaFin, tipoConsulta) {
     var fechaIniPart = fechaIni.split('-');
     var fechaFinPart = fechaFin.split('-');
     var fechaIniDate = new Date(fechaIniPart[0], fechaIniPart[1] - 1, fechaIniPart[2]);
@@ -31,6 +30,7 @@ function buscar(fechaIni, fechaFin) {
     fechaOrigFin = fechaFinDate;
 
     mesesConsulta = Math.round((fechaFinDate - fechaIniDate) / (1000 * 3600 * 24) / 30);
+    idsConsulta = [];
 
     for (i = 0; i < mesesConsulta; i++) {
         fechaFinDate = new Date(fechaIniDate);
@@ -38,34 +38,38 @@ function buscar(fechaIni, fechaFin) {
 
         if (fechaFinDate >= fechaOrigFin) { fechaFinDate = fechaOrigFin };
 
-        var fechaIniForm = fechaIniDate.getDate().toString().padStart(2, 0) + '/' + (fechaIniDate.getMonth() + 1).toString().padStart(2, 0) + '/' + fechaIniDate.getFullYear();
-        var fechaFinForm = (fechaFinDate.getDate()).toString().padStart(2, 0) + '/' + (fechaFinDate.getMonth() + 1).toString().padStart(2, 0) + '/' + fechaFinDate.getFullYear();
+        var fechaIniDay = fechaIniDate.getDate().toString().padStart(2, 0);
+        var fechaIniMonth = (fechaIniDate.getMonth() + 1).toString().padStart(2, 0);
+        var fechaIniYear = fechaIniDate.getFullYear()
+        var fechaFinDay = (fechaFinDate.getDate()).toString().padStart(2, 0);
+        var fechaFinMonth = (fechaFinDate.getMonth() + 1).toString().padStart(2, 0);
+        var fechaFinYear = fechaFinDate.getFullYear()
+        var fechaEmisionBusqueda = `${fechaIniDay}%2F${fechaIniMonth}%2F${fechaIniYear}+-+${fechaFinDay}%2F${fechaFinMonth}%2F${fechaFinYear}`;
 
-        document.getElementById("fechaEmision").value = fechaIniForm + " - " + fechaFinForm;
+        var url = `${urlApiAfipBase}generarConsulta&t=${tipoConsulta}&fechaEmision=${fechaEmisionBusqueda}&tiposComprobantes=`
+        var idConsulta = await makeConsulta(url);
 
-        document.getElementById('buscarComprobantes').click();
+        idsConsulta.push(idConsulta);
 
         fechaIniDate = new Date(fechaFinDate.setDate(fechaFinDate.getDate() + 1));
     };
+    //document.getElementById('linkTabHistorial').click();
+    await downloadFile();
+}
 
-    document.getElementById('linkTabHistorial').click();
+async function makeConsulta(url) {
+    let responseConsulta = await fetch(url);
+    let json = await responseConsulta.json();
+
+    return await json.datos.idConsulta;
 }
 
 /**
  * Here is where the magic happens
  */
 async function downloadFile() {
-    const urlConsulta = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaConsultas&t=R";
-    let responseListaConsulta = await fetch(urlConsulta);
-    let json = await responseListaConsulta.json();
-    let datos = json.datos;
-    idsConsulta = [];
-    for (let i = 0; i < datos.length; i++) {
-        idsConsulta.push(datos[i].codigo);
-    };
-
     for (let i = 0; i < mesesConsulta; i++) {
-        var url = `https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=listaResultados&id=${idsConsulta[i]}`;
+        var url = `${urlApiAfipBase}listaResultados&id=${idsConsulta[i]}`;
         var responseListaResultados = await fetch(url);
         var json2 = await responseListaResultados.json();
         var data = await json2.datos.data;
@@ -73,10 +77,10 @@ async function downloadFile() {
             cvsData += `\n"${element[0]}","${element[1]}","${element[3]}","${element[4]}","${element[5]}","${element[8]}","${element[10]}","${element[11]}","${element[12]}","${element[13]}","${element[14]}","${element[15]}","${element[17]}","${element[19]}","${element[21]}","${element[23]}"`;
         });
     };
-    saveFile()
+    await saveFile();
 }
 
-function saveFile() {
+async function saveFile() {
     cvsData = 'data:text/csv;charset=utf-8,\n' + cvsData;
     var encodedUri = encodeURI(cvsData);
     var link = document.createElement("a");

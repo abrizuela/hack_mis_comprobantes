@@ -9,14 +9,25 @@
 
 <body>
     <div id="hmc-popup">
-        <h2>Indicar fechas</h2>
+        <span class="hmc-title">Comprobantes</span>
+        <div id="hmc-tipo-comprobantes">
+            <div>
+                <label for="hmc-tipo-consulta-emitidos">Emitidos</label>
+                <input type="radio" id='hmc-tipo-consulta-emitidos' name="hmc-tipo-consulta" value="E" checked>
+            </div>
+            <div>
+                <label for="hmc-tipo-consulta-recibidos">Recibidos</label>
+                <input type="radio" id='hmc-tipo-consulta-recibidos' name="hmc-tipo-consulta" value="R">
+            </div>
+        </div>
+        <span class="hmc-title">Indicar fechas</span>
         <div id='hmc-fechas'>
             <label for="hmc-fecha-ini">Fecha desde:</label>
-            <input id="hmc-fecha-ini" name="hmc-fecha-ini" type="date">
+            <input type="date" id="hmc-fecha-ini" name="hmc-fecha-ini">
             <label for="hmc-fecha-fin">Fecha hasta:</label>
-            <input id="hmc-fecha-fin" name="hmc-fecha-fin" type="date">
+            <input type="date" id="hmc-fecha-fin" name="hmc-fecha-fin">
         </div>
-        <input id="hmc-fechas-btn" value="Hack fechas!" type="button">
+        <input id="hmc-hack-btn" value="Hack Mis Comprobantes!" type="button">
 
         <span id="hmc-message" class="vmc-message hidden"></span>
     </div>
