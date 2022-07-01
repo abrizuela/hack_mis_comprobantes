@@ -4,6 +4,7 @@ var fechaOrigIni;
 var fechaOrigFin;
 var mesesConsulta;
 var idsConsulta;
+var tipoConsultaNombre;
 var cvsData = '"Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Cod. Autorizacion","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominacion Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"'
 /**
  * Listen for messages from the background script.
@@ -28,6 +29,15 @@ async function doTheMagic(fechaIni, fechaFin, tipoConsulta) {
     var fechaFinDate = new Date(fechaFinPart[0], fechaFinPart[1] - 1, fechaFinPart[2]);
     fechaOrigIni = fechaIniDate;
     fechaOrigFin = fechaFinDate;
+    switch (tipoConsulta) {
+        case "E":
+            tipoConsultaNombre = "Emitidos";
+            break;
+        case "R":
+            tipoConsultaNombre = "Recibidos";
+        default:
+            break;
+    }
 
     mesesConsulta = Math.round((fechaFinDate - fechaIniDate) / (1000 * 3600 * 24) / 30);
     idsConsulta = [];
@@ -90,7 +100,7 @@ async function saveFile() {
     var fechaFinForm = (fechaOrigFin.getDate()).toString().padStart(2, 0) + '-' + (fechaOrigFin.getMonth() + 1).toString().padStart(2, 0) + '-' + fechaOrigFin.getFullYear();
 
     var nombre = document.querySelector("#usernav .text-primary").textContent;
-    link.setAttribute("download", `${nombre} | ${fechaIniForm} - ${fechaFinForm}`);
+    link.setAttribute("download", `${nombre} - ${tipoConsultaNombre} - ${fechaIniForm} - ${fechaFinForm}`);
     document.body.appendChild(link); // Required for FF
 
     link.click(); // This will download the data file named "my_data.csv".
