@@ -10,11 +10,14 @@ function listenForClicks() {
                 var fechaIni = document.getElementById('hmc-fecha-ini').value;
                 var fechaFin = document.getElementById('hmc-fecha-fin').value;
                 var tipoConsulta = document.querySelector('input[name="hmc-tipo-consulta"]:checked').value;
+                var tipoArchivo  =document.querySelector('input[name="hmc-tipo-archivo"]:checked').value;
+
                 browser.tabs.sendMessage(tab.id, {
                     command: "doTheMagic",
                     fechaIni: fechaIni,
                     fechaFin: fechaFin,
-                    tipoConsulta: tipoConsulta
+                    tipoConsulta: tipoConsulta,
+                    tipoArchivo: tipoArchivo
                 });
             });
         }

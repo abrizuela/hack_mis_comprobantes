@@ -10,7 +10,7 @@
 <body>
     <div id="hmc-popup">
         <span class="hmc-title">Comprobantes</span>
-        <div id="hmc-tipo-comprobantes">
+        <div id="hmc-tipo-comprobantes" class="hmc-radio">
             <div>
                 <label for="hmc-tipo-consulta-emitidos">Emitidos</label>
                 <input type="radio" id='hmc-tipo-consulta-emitidos' name="hmc-tipo-consulta" value="E" checked>
@@ -26,6 +26,17 @@
             <input type="date" id="hmc-fecha-ini" name="hmc-fecha-ini">
             <label for="hmc-fecha-fin">Fecha hasta:</label>
             <input type="date" id="hmc-fecha-fin" name="hmc-fecha-fin">
+        </div>
+        <span class="hmc-title">Tipo de archivo a generar</span>
+        <div id="hmc-tipo-archivo" class="hmc-radio">
+            <div>
+                <label for="hmc-tipo-archivo-csv">CSV</label>
+                <input type="radio" id='hmc-tipo-archivo-csv' name="hmc-tipo-archivo" value="csv" checked>
+            </div>
+            <div>
+                <label for="hmc-tipo-archivo-tsv">TXT</label>
+                <input type="radio" id='hmc-tipo-archivo-tsv' name="hmc-tipo-archivo" value="plain">
+            </div>
         </div>
         <input id="hmc-hack-btn" value="Hack Mis Comprobantes!" type="button">
 

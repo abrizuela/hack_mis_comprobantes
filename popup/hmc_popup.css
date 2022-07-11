@@ -11,7 +11,7 @@
     place-items: center;
 }
 
-#hmc-tipo-comprobantes{
+.hmc-radio{
     display: grid;
     grid-template-columns: minmax(100px, 50%) 1fr;
     place-items: center;
