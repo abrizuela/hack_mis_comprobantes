@@ -1,5 +1,5 @@
 const urlApiAfipBase = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=";
-const fileColHeader = ["Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Cod. Autorizacion","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominacion Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"];
+const archivoNombresColumnas = ["Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Cod. Autorizacion","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominacion Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"];
 
 var fechaOrigIni;
 var fechaOrigFin;
@@ -7,7 +7,7 @@ var mesesConsulta;
 var idsConsulta;
 var tipoConsultaNombre;
 var tipoArchivoSeparador;
-var fileData;
+var datosArchivo;
 /**
  * Listen for messages from the background script.
  * Call "doTheMagic".
@@ -37,7 +37,7 @@ async function doTheMagic(fechaIni, fechaFin, tipoConsulta, tipoArchivo) {
             break;
     }
 
-    fileData = fileColHeader.join(tipoArchivoSeparador);
+    datosArchivo = archivoNombresColumnas.join(tipoArchivoSeparador);
 
     var fechaIniPart = fechaIni.split('-');
     var fechaFinPart = fechaFin.split('-');
@@ -81,7 +81,7 @@ async function doTheMagic(fechaIni, fechaFin, tipoConsulta, tipoArchivo) {
         fechaIniDate = new Date(fechaFinDate.setDate(fechaFinDate.getDate() + 1));
     };
 
-    await downloadFile(tipoArchivo);
+    await downloadFile();
     await saveFile(tipoArchivo);
 }
 
@@ -95,24 +95,24 @@ async function makeConsulta(url) {
 /**
  * Here is where the magic happens
  */
-async function downloadFile(tipoArchivo) {
+async function downloadFile() {
 
     for (let i = 0; i < mesesConsulta; i++) {
         var url = `${urlApiAfipBase}listaResultados&id=${idsConsulta[i]}`;
         var responseListaResultados = await fetch(url);
-        var json2 = await responseListaResultados.json();
-        var data = await json2.datos.data;
+        var json = await responseListaResultados.json();
+        var data = await json.datos.data;
         data.forEach(element => {
-            var dataArray = [element[0], element[1], element[3], element[4], element[5], element[8], element[10], element[11], element[12], element[13], element[14], element[15], element[17], element[19], element[21], element[23]];
-            var data = dataArray.join(tipoArchivoSeparador);
-            fileData += `\n${data}`;
+            var datosArray = [element[0], element[1], element[3], element[4], element[5], element[8], element[10], element[11], element[12], element[13], element[14], element[15], element[17], element[19], element[21], element[23]];
+            var data = datosArray.join(tipoArchivoSeparador);
+            datosArchivo += `\n${data}`;
         });
     };
 
 }
 
 async function saveFile(tipoArchivo) {
-    var file = `data:text/${tipoArchivo};charset=utf-8,` + fileData;
+    var file = `data:text/${tipoArchivo};charset=utf-8,` + datosArchivo;
     var encodedUri = encodeURI(file);
     var link = document.createElement("a");
     link.setAttribute("href", encodedUri);
