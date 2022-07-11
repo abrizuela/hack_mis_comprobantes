@@ -6,8 +6,8 @@
     },
     "manifest_version": 2,
     "name": "Hack Mis Comprobantes",
-    "version": "1.0.0",
-    "description": "Complemento para obtener 'Mis Comprobantes' (Emitidos o Recibidos) de la AFIP para más de 31 días corridos y exportarlos a un CSV",
+    "version": "1.2.0",
+    "description": "Complemento para obtener 'Mis Comprobantes' (Emitidos o Recibidos) de la AFIP para más de 31 días corridos y exportarlos a un CSV/TXT",
     "icons": {
         "16": "icons/afip-16.png",
         "32": "icons/afip-32.png",
