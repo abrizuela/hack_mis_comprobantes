@@ -1,11 +1,13 @@
-const urlApiAfipBase = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=";
+var urlApiAfipBase = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=";
+var archivoNombresColumnas = ["Fecha", "Tipo", "Punto de Venta", "Numero Desde", "Numero Hasta", "Cod. Autorizacion", "Tipo Doc. Emisor", "Nro. Doc. Emisor", "Denominacion Emisor", "Tipo Cambio", "Moneda", "Imp. Neto Gravado", "Imp. Neto No Gravado", "Imp. Op. Exentas", "IVA", "Imp. Total"];
 
 var fechaOrigIni;
 var fechaOrigFin;
 var mesesConsulta;
 var idsConsulta;
 var tipoConsultaNombre;
-var cvsData = '"Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Cod. Autorizacion","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominacion Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"'
+var tipoArchivoSeparador;
+var datosArchivo;
 /**
  * Listen for messages from the background script.
  * Call "doTheMagic".
@@ -13,7 +15,11 @@ var cvsData = '"Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Co
 browser.runtime.onMessage.addListener(message => {
     switch (message.command) {
         case "doTheMagic":
-            doTheMagic(message.fechaIni, message.fechaFin, message.tipoConsulta);
+            doTheMagic(message.fechaIni, message.fechaFin, message.tipoConsulta, message.tipoArchivo)
+                .catch(e => {
+                    alert("Sesión expirada, vuelva a ingresar");
+                    location.reload();
+                });
             break;
     };
 });
@@ -22,13 +28,28 @@ browser.runtime.onMessage.addListener(message => {
  * Busca para todos los períodos 
  * comprendidos entre las fechas ingresadas
  */
-async function doTheMagic(fechaIni, fechaFin, tipoConsulta) {
+async function doTheMagic(fechaIni, fechaFin, tipoConsulta, tipoArchivo) {
+    switch (tipoArchivo) {
+        case "csv":
+            tipoArchivoSeparador = ",";
+            break;
+        case "plain":
+            tipoArchivoSeparador = "\t";
+            break;
+        default:
+            tipoArchivoSeparador = ",";
+            break;
+    }
+
+    datosArchivo = archivoNombresColumnas.join(tipoArchivoSeparador);
+
     var fechaIniPart = fechaIni.split('-');
     var fechaFinPart = fechaFin.split('-');
     var fechaIniDate = new Date(fechaIniPart[0], fechaIniPart[1] - 1, fechaIniPart[2]);
     var fechaFinDate = new Date(fechaFinPart[0], fechaFinPart[1] - 1, fechaFinPart[2]);
     fechaOrigIni = fechaIniDate;
     fechaOrigFin = fechaFinDate;
+
     switch (tipoConsulta) {
         case "E":
             tipoConsultaNombre = "Emitidos";
@@ -63,8 +84,9 @@ async function doTheMagic(fechaIni, fechaFin, tipoConsulta) {
 
         fechaIniDate = new Date(fechaFinDate.setDate(fechaFinDate.getDate() + 1));
     };
-    //document.getElementById('linkTabHistorial').click();
+
     await downloadFile();
+    await saveFile(tipoArchivo);
 }
 
 async function makeConsulta(url) {
@@ -78,21 +100,24 @@ async function makeConsulta(url) {
  * Here is where the magic happens
  */
 async function downloadFile() {
+
     for (let i = 0; i < mesesConsulta; i++) {
         var url = `${urlApiAfipBase}listaResultados&id=${idsConsulta[i]}`;
         var responseListaResultados = await fetch(url);
-        var json2 = await responseListaResultados.json();
-        var data = await json2.datos.data;
+        var json = await responseListaResultados.json();
+        var data = await json.datos.data;
         data.forEach(element => {
-            cvsData += `\n"${element[0]}","${element[1]}","${element[3]}","${element[4]}","${element[5]}","${element[8]}","${element[10]}","${element[11]}","${element[12]}","${element[13]}","${element[14]}","${element[15]}","${element[17]}","${element[19]}","${element[21]}","${element[23]}"`;
+            var datosArray = [element[0], element[1], element[3], element[4], element[5], element[8], element[10], element[11], element[12], element[13], element[14], element[15], element[17], element[19], element[21], element[23]];
+            var data = datosArray.join(tipoArchivoSeparador);
+            datosArchivo += `\n${data}`;
         });
     };
-    await saveFile();
+
 }
 
-async function saveFile() {
-    cvsData = 'data:text/csv;charset=utf-8,\n' + cvsData;
-    var encodedUri = encodeURI(cvsData);
+async function saveFile(tipoArchivo) {
+    var file = `data:text/${tipoArchivo};charset=utf-8,` + datosArchivo;
+    var encodedUri = encodeURI(file);
     var link = document.createElement("a");
     link.setAttribute("href", encodedUri);
 
