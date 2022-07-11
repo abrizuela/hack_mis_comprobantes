@@ -11,7 +11,7 @@
     place-items: center;
 }
 
-.hmc-radio {
+#hmc-tipo-comprobantes{
     display: grid;
     grid-template-columns: minmax(100px, 50%) 1fr;
     place-items: center;
@@ -32,10 +32,6 @@
     cursor: pointer;
 }
 
-#hmc-hack-btn:hover{
-    background-color: green;
-}
-
 #hmc-fechas-btn:hover {
     background-color: #14142b;
 }
@@ -52,16 +48,4 @@
 .hmc-title {
     place-items: left !important;
     font-weight: bold;
-}
-
-input:invalid {
-    background-color: pink;
-}
-
-input:valid{
-    background-color: lightgreen;
-}
-
-.working {
-    background-color: grey !important;
 }
