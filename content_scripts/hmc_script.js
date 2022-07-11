@@ -1,5 +1,5 @@
-const urlApiAfipBase = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=";
-const archivoNombresColumnas = ["Fecha","Tipo","Punto de Venta","Numero Desde","Numero Hasta","Cod. Autorizacion","Tipo Doc. Emisor","Nro. Doc. Emisor","Denominacion Emisor","Tipo Cambio","Moneda","Imp. Neto Gravado","Imp. Neto No Gravado","Imp. Op. Exentas","IVA","Imp. Total"];
+var urlApiAfipBase = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=";
+var archivoNombresColumnas = ["Fecha", "Tipo", "Punto de Venta", "Numero Desde", "Numero Hasta", "Cod. Autorizacion", "Tipo Doc. Emisor", "Nro. Doc. Emisor", "Denominacion Emisor", "Tipo Cambio", "Moneda", "Imp. Neto Gravado", "Imp. Neto No Gravado", "Imp. Op. Exentas", "IVA", "Imp. Total"];
 
 var fechaOrigIni;
 var fechaOrigFin;
@@ -15,7 +15,11 @@ var datosArchivo;
 browser.runtime.onMessage.addListener(message => {
     switch (message.command) {
         case "doTheMagic":
-            doTheMagic(message.fechaIni, message.fechaFin, message.tipoConsulta, message.tipoArchivo);
+            doTheMagic(message.fechaIni, message.fechaFin, message.tipoConsulta, message.tipoArchivo)
+                .catch(e => {
+                    alert("Sesión expirada, vuelva a ingresar");
+                    location.reload();
+                });
             break;
     };
 });

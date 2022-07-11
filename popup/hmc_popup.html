@@ -3,7 +3,7 @@
 <html>
 
 <head>
-    <meta charset="charset=utf-8" />
+    <meta charset="utf-8" />
     <link rel="stylesheet" href="hmc_popup.css">
 </head>
 
@@ -23,9 +23,9 @@
         <span class="hmc-title">Indicar fechas</span>
         <div id='hmc-fechas'>
             <label for="hmc-fecha-ini">Fecha desde:</label>
-            <input type="date" id="hmc-fecha-ini" name="hmc-fecha-ini">
+            <input type="date" id="hmc-fecha-ini" name="hmc-fecha-ini" required pattern="{d}2-{d}2-{d}4">
             <label for="hmc-fecha-fin">Fecha hasta:</label>
-            <input type="date" id="hmc-fecha-fin" name="hmc-fecha-fin">
+            <input type="date" id="hmc-fecha-fin" name="hmc-fecha-fin" required>
         </div>
         <span class="hmc-title">Tipo de archivo a generar</span>
         <div id="hmc-tipo-archivo" class="hmc-radio">
@@ -40,7 +40,7 @@
         </div>
         <input id="hmc-hack-btn" value="Hack Mis Comprobantes!" type="button">
 
-        <span id="hmc-message" class="vmc-message hidden"></span>
+        <span id="hmc-message" class="hmc-message hidden message-error"></span>
     </div>
     <script src="hmc_popup.js"></script>
 </body>
