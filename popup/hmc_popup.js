@@ -1,4 +1,4 @@
-const urlMiscomprobantes = 'https://serviciosjava2.afip.gob.ar/mcmp/jsp/mostrarMenu.do';
+const URL_AFIP_BASE = 'https://fes.afip.gob.ar';
 
 function reportError(error) {
     var errorMessage = document.querySelector("#hmc-message");
@@ -15,7 +15,10 @@ function reportError(error) {
  */
 function listenForClicks() {
     function makeValidations(url, fechaIni, fechaFin) {
-        if (url != urlMiscomprobantes) {
+        if (
+            !url.includes(`${URL_AFIP_BASE}/mcmp/jsp/setearContribuyente.do`) &&
+            !url.includes(`${URL_AFIP_BASE}/mcmp/jsp/menuPrincipal.do`)
+        ) {
             return [false, "Debe estar en la página de AFIP de 'Mis Comprobantes'"];
         }
 

@@ -1,5 +1,6 @@
-var urlApiAfipBase = "https://serviciosjava2.afip.gob.ar/mcmp/jsp/ajax.do?f=";
-var archivoNombresColumnas = ["Fecha", "Tipo", "Punto de Venta", "Numero Desde", "Numero Hasta", "Cod. Autorizacion", "Tipo Doc. Emisor", "Nro. Doc. Emisor", "Denominacion Emisor", "Tipo Cambio", "Moneda", "Imp. Neto Gravado", "Imp. Neto No Gravado", "Imp. Op. Exentas", "IVA", "Imp. Total"];
+const URL_AFIP_BASE_CONSULTA = "https://fes.afip.gob.ar/mcmp/jsp/ajax.do?f=";
+const ARCHIVO_NOMBRE_COL = ["Fecha", "Tipo", "Punto de Venta", "Numero Desde", "Numero Hasta", "Cod. Autorizacion", "Tipo Doc. Emisor", "Nro. Doc. Emisor", "Denominacion Emisor", "Tipo Cambio", "Moneda", "Imp. Neto Gravado", "Imp. Neto No Gravado", "Imp. Op. Exentas", "IVA", "Imp. Total"];
+const REGEX_CUIT = /\d{2}-\d{7,8}-\d{1}/;
 
 var fechaOrigIni;
 var fechaOrigFin;
@@ -41,7 +42,7 @@ async function doTheMagic(fechaIni, fechaFin, tipoConsulta, tipoArchivo) {
             break;
     }
 
-    datosArchivo = archivoNombresColumnas.join(tipoArchivoSeparador);
+    datosArchivo = ARCHIVO_NOMBRE_COL.join(tipoArchivoSeparador);
 
     var fechaIniPart = fechaIni.split('-');
     var fechaFinPart = fechaFin.split('-');
@@ -75,9 +76,16 @@ async function doTheMagic(fechaIni, fechaFin, tipoConsulta, tipoArchivo) {
         var fechaFinDay = (fechaFinDate.getDate()).toString().padStart(2, 0);
         var fechaFinMonth = (fechaFinDate.getMonth() + 1).toString().padStart(2, 0);
         var fechaFinYear = fechaFinDate.getFullYear()
-        var fechaEmisionBusqueda = `${fechaIniDay}%2F${fechaIniMonth}%2F${fechaIniYear}+-+${fechaFinDay}%2F${fechaFinMonth}%2F${fechaFinYear}`;
+        var fechaEmisionBusqueda = `${fechaIniDay}%2F${fechaIniMonth}%2F${fechaIniYear} - ${fechaFinDay}%2F${fechaFinMonth}%2F${fechaFinYear}`;
 
-        var url = `${urlApiAfipBase}generarConsulta&t=${tipoConsulta}&fechaEmision=${fechaEmisionBusqueda}&tiposComprobantes=`
+        var cuit = document
+            .querySelector('.nombre-activo')
+            .textContent
+            .match(REGEX_CUIT)[0]
+            .replaceAll('-','');
+
+        var url = `${URL_AFIP_BASE_CONSULTA}generarConsulta&t=${tipoConsulta}&fechaEmision=${fechaEmisionBusqueda}&tiposComprobantes=&cuitConsultada=${cuit}`
+
         var idConsulta = await makeConsulta(url);
 
         idsConsulta.push(idConsulta);
@@ -102,7 +110,7 @@ async function makeConsulta(url) {
 async function downloadFile() {
 
     for (let i = 0; i < mesesConsulta; i++) {
-        var url = `${urlApiAfipBase}listaResultados&id=${idsConsulta[i]}`;
+        var url = `${URL_AFIP_BASE_CONSULTA}listaResultados&id=${idsConsulta[i]}`;
         var responseListaResultados = await fetch(url);
         var json = await responseListaResultados.json();
         var data = await json.datos.data;
