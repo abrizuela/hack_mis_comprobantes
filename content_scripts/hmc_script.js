@@ -1,10 +1,10 @@
-const URL_AFIP_BASE_CONSULTA = "https://fes.afip.gob.ar/mcmp/jsp/ajax.do?f=";
-const ARCHIVO_NOMBRE_COL = ["Fecha", "Tipo", "Punto de Venta", "Numero Desde", "Numero Hasta", "Cod. Autorizacion", "Tipo Doc. Emisor", "Nro. Doc. Emisor", "Denominacion Emisor", "Tipo Cambio", "Moneda", "Imp. Neto Gravado", "Imp. Neto No Gravado", "Imp. Op. Exentas", "IVA", "Imp. Total"];
-const REGEX_CUIT = /\d{2}-\d{7,8}-\d{1}/;
+var URL_AFIP_BASE_CONSULTA = "https://fes.afip.gob.ar/mcmp/jsp/ajax.do?f=";
+var ARCHIVO_NOMBRE_COL = ["Fecha", "Tipo", "Punto de Venta", "Numero Desde", "Numero Hasta", "Cod. Autorizacion", "Tipo Doc. Emisor", "Nro. Doc. Emisor", "Denominacion Emisor", "Tipo Cambio", "Moneda", "Imp. Neto Gravado", "Imp. Neto No Gravado", "Imp. Op. Exentas", "IVA", "Imp. Total"];
+var REGEX_CUIT = /\d{2}-\d{7,8}-\d{1}/;
 
 var fechaOrigIni;
 var fechaOrigFin;
-var mesesConsulta;
+var aniosConsulta;
 var idsConsulta;
 var tipoConsultaNombre;
 var tipoArchivoSeparador;
@@ -18,7 +18,7 @@ browser.runtime.onMessage.addListener(message => {
         case "doTheMagic":
             doTheMagic(message.fechaIni, message.fechaFin, message.tipoConsulta, message.tipoArchivo)
                 .catch(e => {
-                    alert("Sesión expirada, vuelva a ingresar");
+                    alert(`Ha ocurrido el siguiente error: ${e} \nEnvíe una captura de pantalla al desarrollador`);
                     location.reload();
                 });
             break;
@@ -61,12 +61,12 @@ async function doTheMagic(fechaIni, fechaFin, tipoConsulta, tipoArchivo) {
             break;
     }
 
-    mesesConsulta = Math.round((fechaFinDate - fechaIniDate) / (1000 * 3600 * 24) / 30);
+    aniosConsulta = Math.round((fechaFinDate - fechaIniDate) / (1000 * 3600 * 24) / 30 / 12);
+    
     idsConsulta = [];
 
-    for (i = 0; i < mesesConsulta; i++) {
-        fechaFinDate = new Date(fechaIniDate);
-        fechaFinDate = new Date(fechaFinDate.getFullYear(), fechaFinDate.getMonth() + 1, 0);
+    for (i = 0; i < aniosConsulta; i++) {
+        fechaFinDate = new Date(fechaIniDate.getFullYear(), 11, 31);
 
         if (fechaFinDate >= fechaOrigFin) { fechaFinDate = fechaOrigFin };
 
@@ -82,7 +82,7 @@ async function doTheMagic(fechaIni, fechaFin, tipoConsulta, tipoArchivo) {
             .querySelector('.nombre-activo')
             .textContent
             .match(REGEX_CUIT)[0]
-            .replaceAll('-','');
+            .replaceAll('-', '');
 
         var url = `${URL_AFIP_BASE_CONSULTA}generarConsulta&t=${tipoConsulta}&fechaEmision=${fechaEmisionBusqueda}&tiposComprobantes=&cuitConsultada=${cuit}`
 
@@ -109,7 +109,7 @@ async function makeConsulta(url) {
  */
 async function downloadFile() {
 
-    for (let i = 0; i < mesesConsulta; i++) {
+    for (let i = 0; i < aniosConsulta; i++) {
         var url = `${URL_AFIP_BASE_CONSULTA}listaResultados&id=${idsConsulta[i]}`;
         var responseListaResultados = await fetch(url);
         var json = await responseListaResultados.json();
@@ -136,5 +136,5 @@ async function saveFile(tipoArchivo) {
     link.setAttribute("download", `${nombre} - ${tipoConsultaNombre} - ${fechaIniForm} - ${fechaFinForm}`);
     document.body.appendChild(link); // Required for FF
 
-    link.click(); // This will download the data file named "my_data.csv".
+    link.click(); // This will download the data file.
 }
